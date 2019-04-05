@@ -303,15 +303,40 @@ def w32FillExcel():
 class GuiReadFiles(wx.Panel):
     def __init__(self, parent):
         super().__init__(parent)
-
-        buttonOk = wx.Button(self, label="OK")
+        button_ok = wx.Button(self, label="OK")
+        button_ok.Bind(wx.EVT_BUTTON, parent.on_close)
 
 
 class GuiFrame(wx.Frame):
     def __init__(self):
         super().__init__(None, title="Zadej soubory")
+        """
+        Create a toolbar
+        """
+        self.toolbar = self.CreateToolBar()
+        self.toolbar.SetToolBitmapSize((16, 16))
+        self.folderPath = ""
+        open_ico = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR, (16, 16))
+        OpenTool = self.toolbar.AddTool(
+            wx.ID_ANY, "Otevřít", open_ico, "Otevřít složku"
+        )
+        self.Bind(wx.EVT_MENU, self.on_open_directory, OpenTool)
+
         panel = GuiReadFiles(self)
         self.Show()
+
+    def on_open_directory(self, event):
+        """
+        Open a directory dialog
+        :param event:
+        :return:
+        """
+        with wx.DirDialog(self, "Vyberte složku", style=wx.DD_DEFAULT_STYLE) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                self.folderPath = dlg.GetPath()
+
+    def on_close(self, event):
+        self.Close(force=False)
 
 
 def run_wx():

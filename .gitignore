@@ -1,2 +1,4 @@
 #Ignore Pycharm folder
 .idea/
+.wxstat/build/
+.wxstat/dist/
