@@ -302,38 +302,56 @@ def w32FillExcel():
 
 class GuiReadFiles(wx.Panel):
     def __init__(self, parent):
+        self.folderPath = ""
+        self.cji3Path = ""
         super().__init__(parent)
         button_ok = wx.Button(self, label="OK")
         button_ok.Bind(wx.EVT_BUTTON, parent.on_close)
+        button_opendir = wx.Button(self, label="Otevřít složku")
+        button_opendir.Bind(wx.EVT_BUTTON, parent.on_open_directory)
+        button_opencji3 = wx.Button(self, label="Otevřít CJI3")
+        button_opencji3.Bind(wx.EVT_BUTTON, parent.on_open_cji3)
+        self.txt_cji3 = wx.TextCtrl(self, size=(400, -1))
+        self.txt_cji3.Bind(wx.EVT_COMMAND_LEFT_CLICK, parent.on_open_cji3)
+        main_sizer = wx.WrapSizer()
+        main_sizer.Add(button_ok)
+        main_sizer.Add(button_opendir)
+        main_sizer.Add(button_opencji3)
+        main_sizer.Add(self.txt_cji3)
+        self.SetSizer(main_sizer)
 
 
 class GuiFrame(wx.Frame):
     def __init__(self):
         super().__init__(None, title="Zadej soubory")
-        """
-        Create a toolbar
-        """
-        self.toolbar = self.CreateToolBar()
-        self.toolbar.SetToolBitmapSize((16, 16))
-        self.folderPath = ""
-        open_ico = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR, (16, 16))
-        OpenTool = self.toolbar.AddTool(
-            wx.ID_ANY, "Otevřít", open_ico, "Otevřít složku"
-        )
-        self.Bind(wx.EVT_MENU, self.on_open_directory, OpenTool)
-
-        panel = GuiReadFiles(self)
+        self.panel = GuiReadFiles(self)
+        self.create_menu()
         self.Show()
 
+    def create_menu(self):
+        menu_bar = wx.MenuBar()
+        file_menu = wx.Menu()
+        exit_menu_item = file_menu.Append(wx.ID_ANY, "&Konec", "Ukončit aplikaci")
+        menu_bar.Append(file_menu, "&Soubor")
+        self.Bind(wx.EVT_MENU, self.on_exit, exit_menu_item)
+        self.SetMenuBar(menu_bar)
+
+    def on_exit(self, event):
+        self.Close()
+
     def on_open_directory(self, event):
-        """
-        Open a directory dialog
-        :param event:
-        :return:
-        """
         with wx.DirDialog(self, "Vyberte složku", style=wx.DD_DEFAULT_STYLE) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
-                self.folderPath = dlg.GetPath()
+                self.panel.folderPath = dlg.GetPath()
+
+    def on_open_cji3(self, event):
+        wildcard = "*.xlsx"
+        with wx.FileDialog(
+            self, "Vyberte soubor CJI3", style=wx.ID_OPEN, wildcard=wildcard
+        ) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                self.panel.cji3Path = dlg.GetPath()
+                self.panel.txt_cji3.WriteText(self.panel.cji3Path)
 
     def on_close(self, event):
         self.Close(force=False)
@@ -346,10 +364,6 @@ def run_wx():
 
 
 if __name__ == "__main__":
-    # Create QApplication
-    # import guidata
-
-    # _app = guidata.qapplication()
     run_wx()
     prm = InsertFileNames()
     config = configparser.RawConfigParser(allow_no_value=True)
