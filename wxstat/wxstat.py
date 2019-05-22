@@ -304,20 +304,33 @@ class GuiReadFiles(wx.Panel):
     def __init__(self, parent):
         self.folderPath = ""
         self.cji3Path = ""
+        self.cooisPath = ""
         super().__init__(parent)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
         button_ok = wx.Button(self, label="OK")
         button_ok.Bind(wx.EVT_BUTTON, parent.on_close)
-        button_opendir = wx.Button(self, label="Otevřít složku")
+        main_sizer.Add(button_ok)
+        button_opendir = wx.Button(self, label="Otevřít složku", size=(50, -1))
         button_opendir.Bind(wx.EVT_BUTTON, parent.on_open_directory)
+        main_sizer.Add(button_opendir)
         button_opencji3 = wx.Button(self, label="Otevřít CJI3")
         button_opencji3.Bind(wx.EVT_BUTTON, parent.on_open_cji3)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(button_opencji3)
         self.txt_cji3 = wx.TextCtrl(self, size=(400, -1))
         self.txt_cji3.Bind(wx.EVT_COMMAND_LEFT_CLICK, parent.on_open_cji3)
-        main_sizer = wx.WrapSizer()
-        main_sizer.Add(button_ok)
-        main_sizer.Add(button_opendir)
-        main_sizer.Add(button_opencji3)
-        main_sizer.Add(self.txt_cji3)
+        hsizer.Add(self.txt_cji3)
+        main_sizer.Add(hsizer)
+
+        button_opencoois = wx.Button(self, label="Otevřít coois")
+        button_opencoois.Bind(wx.EVT_BUTTON, parent.on_open_coois)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        hsizer.Add(button_opencoois)
+        self.txt_coois = wx.TextCtrl(self, size=(400, -1))
+        self.txt_coois.Bind(wx.EVT_COMMAND_LEFT_CLICK, parent.on_open_coois)
+        hsizer.Add(self.txt_coois)
+        main_sizer.Add(hsizer)
+        main_sizer.Fit(parent)
         self.SetSizer(main_sizer)
 
 
@@ -353,6 +366,15 @@ class GuiFrame(wx.Frame):
                 self.panel.cji3Path = dlg.GetPath()
                 self.panel.txt_cji3.WriteText(self.panel.cji3Path)
 
+    def on_open_coois(self, event):
+        wildcard = "*.xlsx"
+        with wx.FileDialog(
+            self, "Vyberte soubor CJI3", style=wx.ID_OPEN, wildcard=wildcard
+        ) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                self.panel.cooisPath = dlg.GetPath()
+                self.panel.txt_coois.WriteText(self.panel.cooisPath)
+
     def on_close(self, event):
         self.Close(force=False)
 
@@ -360,10 +382,13 @@ class GuiFrame(wx.Frame):
 def run_wx():
     app = wx.App(redirect=False)
     frame = GuiFrame()
+    wx.lib.inspection.InspectionTool().Show()
     app.MainLoop()
 
 
 if __name__ == "__main__":
+    import wx.lib.inspection
+
     run_wx()
     prm = InsertFileNames()
     config = configparser.RawConfigParser(allow_no_value=True)
@@ -717,3 +742,4 @@ if __name__ == "__main__":
     connection.close()
 
     w32FillExcel()
+y
